@@ -26,33 +26,20 @@ export const MIGRATIONS: string[] = [
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL
   );
-  CREATE TABLE tills (
-    id TEXT PRIMARY KEY NOT NULL,
-    name TEXT NOT NULL,
-    currency TEXT NOT NULL,
-    float INTEGER NOT NULL DEFAULT 0,
-    position INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+  CREATE TABLE readings (
+    t INTEGER PRIMARY KEY NOT NULL,
+    hpa REAL NOT NULL,
+    source TEXT NOT NULL DEFAULT 'open'
   );
-  CREATE TABLE counts (
+  CREATE TABLE notes (
     id TEXT PRIMARY KEY NOT NULL,
-    till_id TEXT NOT NULL,
-    till_name TEXT NOT NULL DEFAULT '',
-    name TEXT NOT NULL DEFAULT '',
-    note TEXT NOT NULL DEFAULT '',
-    day TEXT NOT NULL,
-    currency TEXT NOT NULL,
-    pieces TEXT NOT NULL DEFAULT '{}',
-    custom TEXT NOT NULL DEFAULT '[]',
-    expected TEXT NOT NULL DEFAULT '{}',
-    total INTEGER NOT NULL DEFAULT 0,
-    diff INTEGER,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL
+    t INTEGER NOT NULL,
+    label TEXT NOT NULL,
+    hpa REAL,
+    change_hpa REAL,
+    created_at INTEGER NOT NULL
   );
-  CREATE INDEX counts_day ON counts (day, created_at);
-  CREATE INDEX counts_till ON counts (till_id);
+  CREATE INDEX notes_t ON notes (t);
   `,
 ];
 

@@ -1,116 +1,79 @@
 /**
  * What is free and what is Pro, as pure functions checked by `npm test`.
  *
- * Free forever: counting with no limit, one till, the last three saved
- * counts in History, the first count sheet and the first CSV export, and
- * one currency (set from the phone's region, and changeable until the
- * first count is saved).
+ * Free forever: the live barometer, the altimeter, every unit, sea level
+ * pressure from the phone's own elevation (location), and the last 24
+ * hours of history (the 3 hour and 24 hour charts). One note, to try it.
  *
- * Pro: every saved count in History, more tills, every count sheet and CSV
- * export, the deposit helper, custom rows, and any currency for any till.
+ * Pro: the 7 and 30 day charts, the pressure change alert, notes on the
+ * chart (any number), CSV and PDF export, sea level calibration by a typed
+ * elevation, and the dial styles.
  *
- * Nobody loses what they made: a count is always saved, even past three on
- * the free plan (older ones stay on the phone, out of sight, and come back
- * with Pro); a count sheet that went out free can go out again; tills and
- * custom rows made while Pro keep working when Pro ends.
+ * Nobody loses anything: every reading is stored on both plans and older
+ * ones show again with Pro; notes made with Pro stay in the list.
  */
-
-/** Saved counts shown in History on the free plan. */
-export const FREE_HISTORY = 3;
-/** Count sheets that go out free (by count). */
-export const FREE_SHEETS = 1;
-/** CSV exports that go out free. */
-export const FREE_CSV = 1;
-/** Tills on the free plan. */
-export const FREE_TILLS = 1;
+import type { RangeId } from './chart.ts';
+import { DAY } from './readings.ts';
 
 /** Why the in-app paywall opened. */
-export type PaywallReason = 'save' | 'sheet' | 'csv' | 'till' | 'deposit' | 'rows' | 'currency' | 'pro';
+export type PaywallReason = 'range' | 'alert' | 'note' | 'export' | 'calibrate' | 'dial' | 'pro';
 
-/**
- * Saving a count: always saved. On the free plan the paywall opens first
- * once three counts are already saved (the fourth save and every one
- * after). Editing a count that is already saved never asks.
- */
-export function saveAsksPro(isPro: boolean, savedCount: number, editing: boolean): boolean {
-  return !isPro && !editing && savedCount >= FREE_HISTORY;
+export const FREE_RANGES: RangeId[] = ['3h', '24h'];
+/** Notes on the free plan (the second opens the paywall). */
+export const FREE_NOTES = 1;
+/** How far back the free plan shows history. */
+export const FREE_HISTORY_MS = DAY;
+
+export function rangeAllowed(isPro: boolean, r: RangeId): boolean {
+  return isPro || FREE_RANGES.includes(r);
 }
 
-/** How many saved counts History shows (null: all of them). */
-export function historyLimit(isPro: boolean): number | null {
-  return isPro ? null : FREE_HISTORY;
+/** The earliest moment History shows (readings, notes in the list, export). */
+export function historyStart(isPro: boolean, now: number): number {
+  return isPro ? -Infinity : now - FREE_HISTORY_MS;
 }
 
-/** The saved counts History shows, newest first, and how many older ones are kept out of sight. */
-export function visibleHistory<T extends { createdAt: number }>(isPro: boolean, counts: T[]): { shown: T[]; hidden: number } {
-  const sorted = [...counts].sort((a, b) => b.createdAt - a.createdAt);
-  const limit = historyLimit(isPro);
-  if (limit == null) return { shown: sorted, hidden: 0 };
-  return { shown: sorted.slice(0, limit), hidden: Math.max(0, sorted.length - limit) };
+/** Adding a note: free for the first, then Pro. */
+export function canAddNote(isPro: boolean, noteCount: number): boolean {
+  return isPro || noteCount < FREE_NOTES;
 }
 
-export interface ExportDecision {
-  allowed: boolean;
-  /** Going out now uses the free one. */
-  usesFree: boolean;
-}
-
-/** A count sheet for this count: free for the first count, free again for that same count, Pro after. */
-export function sheetDecision(isPro: boolean, freeSheets: string[], countId: string): ExportDecision {
-  if (isPro) return { allowed: true, usesFree: false };
-  if (freeSheets.includes(countId)) return { allowed: true, usesFree: false };
-  if (freeSheets.length < FREE_SHEETS) return { allowed: true, usesFree: true };
-  return { allowed: false, usesFree: false };
-}
-
-/** A CSV of History: the first export is free. */
-export function csvDecision(isPro: boolean, csvUsed: number): ExportDecision {
-  if (isPro) return { allowed: true, usesFree: false };
-  if (csvUsed < FREE_CSV) return { allowed: true, usesFree: true };
-  return { allowed: false, usesFree: false };
-}
-
-/** Adding a till: the first is free, a second needs Pro. */
-export function canAddTill(isPro: boolean, tills: number): boolean {
-  return isPro || tills < FREE_TILLS;
-}
-
-/** The deposit helper is Pro. */
-export function canUseDeposit(isPro: boolean): boolean {
+export function canAlert(isPro: boolean): boolean {
   return isPro;
 }
 
-/** Adding a custom row is Pro. Rows already made stay. */
-export function canAddCustomRow(isPro: boolean): boolean {
+export function canExport(isPro: boolean): boolean {
   return isPro;
 }
 
-/**
- * Changing a currency. Free: the one currency can be changed until the
- * first count is saved (a phone set to the wrong region is not stuck);
- * after that a different currency is Pro.
- */
-export function canChangeCurrency(isPro: boolean, savedCount: number): boolean {
-  return isPro || savedCount === 0;
+export function canTypeElevation(isPro: boolean): boolean {
+  return isPro;
 }
 
-/** Records something that went out free once (the same count twice counts once). */
-export function recordFree(list: string[], id: string): string[] {
-  return list.includes(id) ? list : [...list, id];
+export type DialStyle = 'classic' | 'marine' | 'plain';
+export const DIAL_STYLES: { id: DialStyle; label: string; line: string }[] = [
+  { id: 'classic', label: 'Classic', line: 'Light face, fine scale' },
+  { id: 'marine', label: 'Marine', line: 'Dark face, bold scale, for a boat or a wall' },
+  { id: 'plain', label: 'Plain', line: 'The ring and the needle only' },
+];
+export const FREE_DIAL: DialStyle = 'classic';
+
+export function dialAllowed(isPro: boolean, d: DialStyle): boolean {
+  return isPro || d === FREE_DIAL;
 }
 
-/** A stored list, cleaned: strings only, no repeats. Bad data counts as none used. */
-export function parseIdList(json: string | null): string[] {
-  try {
-    const v = JSON.parse(json ?? '[]');
-    if (!Array.isArray(v)) return [];
-    return [...new Set(v.filter((x) => typeof x === 'string' && x.length > 0))];
-  } catch {
-    return [];
-  }
+/** The dial shown: a Pro style falls back to Classic when Pro ends, and comes back with it. */
+export function shownDial(isPro: boolean, chosen: DialStyle): DialStyle {
+  return dialAllowed(isPro, chosen) ? chosen : FREE_DIAL;
 }
 
-/** Counting never waits on Pro. */
-export function canCount(_isPro: boolean): true {
-  return true;
+/** Whether the alert actually runs: on, and Pro. Turning Pro off pauses it without losing the setting. */
+export function alertActive(isPro: boolean, enabled: boolean): boolean {
+  return isPro && enabled;
+}
+
+/** A typed elevation counts only with Pro; without it, the location fix (if any) is used. */
+export function elevationInUse<T extends { source: string }>(isPro: boolean, typed: T | null, located: T | null): T | null {
+  if (typed && canTypeElevation(isPro)) return typed;
+  return located;
 }

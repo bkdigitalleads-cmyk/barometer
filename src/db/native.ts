@@ -1,6 +1,6 @@
 /**
  * The app's database: one SQLite file in the app's own storage
- * (cashcounter.db), opened once, migrated before anything reads it.
+ * (barometer.db), opened once, migrated before anything reads it.
  */
 import * as SQLite from 'expo-sqlite';
 import { Db, migrate } from './schema';
@@ -8,7 +8,7 @@ import { Db, migrate } from './schema';
 let opening: Promise<Db> | null = null;
 
 async function open(): Promise<Db> {
-  const sq = await SQLite.openDatabaseAsync('cashcounter.db');
+  const sq = await SQLite.openDatabaseAsync('barometer.db');
   await sq.execAsync('PRAGMA journal_mode = WAL;');
   const db: Db = {
     exec: (sql) => sq.execAsync(sql),

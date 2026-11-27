@@ -1,5 +1,5 @@
 /**
- * Getting a count out: the share sheet (Messages, Mail, Files with "Save to
+ * Getting readings out: the share sheet (Messages, Mail, Files with "Save to
  * Files", AirDrop and the rest) or Print. Files are made on the phone and
  * go only where the person sends them.
  */
@@ -28,12 +28,12 @@ export async function printPdf(uri: string): Promise<void> {
   await Print.printAsync({ uri });
 }
 
-/** "Count sheet Front register 2026-11-22.pdf": readable, safe on every file system. */
+/** "Barometer 7 days 2026-11-27.pdf": readable, safe on every file system. */
 export function safeFileName(parts: string[], ext: 'pdf' | 'csv'): string {
   const clean = parts
     .join(' ')
     .replace(/[\\/:*?"<>|,]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  return `${clean || 'Count sheet'}.${ext}`;
+  return `${clean || 'Barometer'}.${ext}`;
 }

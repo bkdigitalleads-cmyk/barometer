@@ -1,8 +1,8 @@
 /**
- * Storage on the phone. Tills, saved counts and settings live in SQLite
- * (src/db, one file, cashcounter.db); this module has the small key/value
- * helpers over it and the share copies of exported files (count sheets,
- * CSV) in the cache folder, which are cleared at the next launch.
+ * Storage on the phone. Readings, notes and settings live in SQLite
+ * (src/db, one file, barometer.db); this module has the small key/value
+ * helpers over it and the share copies of exported files (the PDF chart,
+ * the CSV) in the cache folder, which are cleared at the next launch.
  */
 import { Directory, File, Paths } from 'expo-file-system';
 import { getDb } from './db/native';

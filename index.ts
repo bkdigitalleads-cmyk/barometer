@@ -15,11 +15,11 @@ function StartupFailure({ error }: { error: unknown }) {
   const stack = (e?.stack ?? '').split('\n').slice(0, 12).join('\n');
   return React.createElement(
     ScrollView,
-    { style: { flex: 1, backgroundColor: '#E9ECEF' }, contentContainerStyle: { padding: 24, paddingTop: 80 } },
-    React.createElement(Text, { style: { fontSize: 20, fontWeight: '600', color: '#0C0E11', marginBottom: 12 } }, 'Cash Counter could not start.'),
-    React.createElement(Text, { style: { fontSize: 15, color: '#0C0E11', marginBottom: 16 } }, 'Please delete the app and install it again. If it keeps happening, send this screen to support.'),
-    React.createElement(Text, { style: { fontSize: 13, color: '#434952', fontFamily: 'Menlo' } }, message),
-    React.createElement(Text, { style: { fontSize: 11, color: '#757C86', fontFamily: 'Menlo', marginTop: 12 } }, stack),
+    { style: { flex: 1, backgroundColor: '#ECEEEA' }, contentContainerStyle: { padding: 24, paddingTop: 80 } },
+    React.createElement(Text, { style: { fontSize: 20, fontWeight: '600', color: '#101418', marginBottom: 12 } }, 'Barometer could not start.'),
+    React.createElement(Text, { style: { fontSize: 15, color: '#101418', marginBottom: 16 } }, 'Please delete the app and install it again. If it keeps happening, send this screen to support.'),
+    React.createElement(Text, { style: { fontSize: 13, color: '#4A5258', fontFamily: 'Menlo' } }, message),
+    React.createElement(Text, { style: { fontSize: 11, color: '#757E84', fontFamily: 'Menlo', marginTop: 12 } }, stack),
     React.createElement(View, { style: { height: 48 } })
   );
 }

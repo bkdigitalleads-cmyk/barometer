@@ -8,7 +8,7 @@ import Purchases from 'react-native-purchases';
 import { ENTITLEMENT_ID, isBillingAvailable } from './purchases';
 import { trialReminderAt } from './offer';
 
-const TRIAL_ID = 'cashcounter.trialReminder';
+const TRIAL_ID = 'barometer.trialReminder';
 
 // If the app happens to be open when it fires, still show it.
 Notifications.setNotificationHandler({
@@ -71,7 +71,7 @@ export async function scheduleTrialReminderIfTrial(): Promise<boolean> {
       identifier: TRIAL_ID,
       content: {
         title: 'Your free trial ends tomorrow',
-        body: 'Cash Counter Pro renews tomorrow. Cancel anytime in Settings, Apple ID, Subscriptions.',
+        body: 'Barometer Pro renews tomorrow. Cancel anytime in Settings, Apple ID, Subscriptions.',
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
