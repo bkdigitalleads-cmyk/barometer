@@ -65,7 +65,7 @@
       "./plugins/withoutPushEntitlement"
     ],
     "extra": {
-      "revenueCatApiKeyIos": "TODO_COWORK_REVENUECAT_IOS_KEY",
+      "revenueCatApiKeyIos": "appl_vsUTOQSBmWxAOEuwbshqWvuMqdC",
       "eas": {
         "projectId": "TODO_COWORK_EAS_PROJECT_ID"
       }

@@ -2,6 +2,10 @@
 
 Newest first. One entry per commit: date, version/build, what changed and why, and how it was checked.
 
+- 2026-11-27: 1.0.0 build 1, setup values from Cowork (same branch claude/barometer-1.0.0 and PR, no merge, no EAS; version and build number unchanged).
+  - app.json `extra.revenueCatApiKeyIos` is the public RevenueCat iOS SDK key (32 characters, starts with `appl_`, so purchases turn on in a real build). eas.json `ascAppId` is 6840171467. The website's App Store button and its JSON-LD now point at apps.apple.com/app/id6840171467. Still a placeholder: app.json `extra.eas.projectId`, which Cowork sends later.
+  - Checked: `npx tsc --noEmit` clean; `npm test` passing (the config check now asserts the exact key and app id, that the key starts with appl_, that the project id is still a placeholder, and the site link); `npx expo config --type introspect` shows the key and `ios.entitlements` `{}`.
+
 - 2026-11-27: 1.0.0 build 1, the app icon and Brian's three decisions (same branch claude/barometer-1.0.0 and PR, no merge, no EAS; version and build number unchanged).
   - Brian picked icon option 3, Ridge: a dial arc over a mountain ridge with the teal hand, on the fog tile. store/icon.js `CHOSEN = 'ridge'`, and `node store/icon.js` wrote assets/icon.png (1024x1024, RGB, no alpha, square corners), the Android adaptive foreground (app.json adaptive background now the same fog, #ECEEEA), both splash icons, the favicon, docs/apple-touch-icon.png and docs/icon-512.png (the website logo, now with clear rounded corners so it sits on the dark page too; its alt text says what it shows). No app screen draws the icon, so no render in docs/design/after changed.
   - Kept, by Brian's decision: the Spanish (Mexico) keywords trimmed to 98 bytes (hpa and inhg dropped), "Get a heads-up on a big change." without "before", and the first note free and shown on the chart.
@@ -43,5 +47,5 @@ Newest first. One entry per commit: date, version/build, what changed and why, a
 - Carrying the phone up or down moves the station reading (about 1 hPa per 8 m), so the trend and the chart mix weather and stairs. The steady band (1 hPa) and the 15 hPa alert cap soften it; a phone that travels a lot will show it. Sea level mode holds the elevation fixed, like a wall barometer.
 - CMAltimeter needs Motion & Fitness access. If it is denied, the app shows a plain screen with Open Settings, and background readings stop too.
 - The renders come from a react-native-web copy; the iOS switch, the share and print sheets, the Motion & Fitness and location prompts look different on a phone, and the dial's text uses the web font renderer.
-- The website's App Store button points at apps.apple.com until the app id exists; the JSON-LD has no downloadUrl yet.
+- The website's App Store button pointed at apps.apple.com until the app id existed; fixed Nov 27 with id 6840171467.
 - The Swift module cannot be compiled here (no Xcode on Linux). It follows the SDK 57 patterns from expo-background-task and Image to Text's module, but the first EAS build is its first compile.

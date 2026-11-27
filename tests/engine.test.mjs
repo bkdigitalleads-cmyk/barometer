@@ -115,7 +115,7 @@ test('the background module: an app refresh task and a processing task without n
 
 // ---------- config ----------
 
-test('app.json: identity, iPhone only, plugins (background readings, push entitlement last), only the two usage strings, placeholders for Cowork', () => {
+test('app.json: identity, iPhone only, plugins (background readings, push entitlement last), only the two usage strings, the store values from Cowork', () => {
   const app = JSON.parse(read('app.json')).expo;
   assert.equal(app.name, 'Barometer');
   assert.equal(app.slug, 'barometer');
@@ -133,12 +133,15 @@ test('app.json: identity, iPhone only, plugins (background readings, push entitl
   assert.equal(loc.locationAlwaysPermission, false);
   assert.equal(loc.isIosBackgroundLocationEnabled, false);
   assert.ok(!/Camera|Microphone|Contacts|Photo|image-picker|expo-camera|background-task/i.test(JSON.stringify(app)));
-  assert.match(app.extra.revenueCatApiKeyIos, /^TODO_COWORK_/);
+  // From Cowork, Nov 27: the public RevenueCat SDK key. The Expo project id comes later.
+  assert.equal(app.extra.revenueCatApiKeyIos, 'appl_vsUTOQSBmWxAOEuwbshqWvuMqdC');
+  assert.match(app.extra.revenueCatApiKeyIos, /^appl_/);
   assert.match(app.extra.eas.projectId, /^TODO_COWORK_/);
   const eas = JSON.parse(read('eas.json'));
   assert.equal(eas.cli.appVersionSource, 'local');
   assert.equal(eas.build.production.autoIncrement, false);
-  assert.match(eas.submit.production.ios.ascAppId, /^TODO_COWORK_/);
+  assert.equal(eas.submit.production.ios.ascAppId, '6840171467');
+  assert.match(read('docs/index.html'), /href="https:\/\/apps\.apple\.com\/app\/id6840171467"/);
   const deploy = read('.eas/workflows/deploy.yml');
   for (const p of ['app.json', 'src/**', 'assets/**', 'modules/**']) assert.ok(deploy.includes(`'${p}'`));
 });
