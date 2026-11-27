@@ -37,7 +37,14 @@ Nothing here is Cash Counter's: no steel tray, no deposit-slip blue, no signal a
 
 ## Icon
 
-Not picked; Brian picks. `node store/icon.js options` draws `icon-options.png`: each concept large and at 60 px on a light and a dark wallpaper. Until a pick, `node store/icon.js` writes a plain deep teal stand-in tile to assets/icon.png, the splash icons, the favicon and docs/icon-512.png. Set `CHOSEN` in store/icon.js to the picked id and run it again.
+**Chosen (Nov 27, 2026): 3, Ridge.** A dial arc of dark graduations over a graphite mountain ridge with a white snowcap, and the teal hand rising from behind the ridge, on the fog tile (#ECEEEA): the barometer and the altimeter in one. `CHOSEN = 'ridge'` in `store/icon.js`; `node store/icon.js` writes every shipped file from it:
+
+- `assets/icon.png`: 1024x1024, RGB with no alpha channel, square corners (iOS rounds them)
+- `assets/android-icon-foreground.png`: the same tile; app.json `android.adaptiveIcon.backgroundColor` is the same fog, #ECEEEA
+- `assets/splash-icon.png` and `splash-icon-dark.png`: the tile with rounded corners, centred on the fog (light) or near-black (dark) splash
+- `assets/favicon.png`, `docs/apple-touch-icon.png` (180, square) and `docs/icon-512.png` (rounded, with clear corners so it sits on the light and the dark page), which is the logo on every website page
+
+No app screen draws the icon, so no render in `after/` changed. The option sheet stays for the record: `node store/icon.js options` draws `icon-options.png`, each concept large and at 60 px on a light and a dark wallpaper.
 
 1. Bulkhead (`bulkhead`): the app's own dial, an enamel face in a graphite bezel with the teal hand and the set hand. Reads "barometer" fastest; the most like the app itself.
 2. Set hand (`sethand`): no face, a bold arc of graduations on deep teal with a white hand and the thin set hand, so the trend is the mark. The strongest silhouette at 60 px and the least like other gauge icons.

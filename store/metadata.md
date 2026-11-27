@@ -22,7 +22,7 @@ Name (27/30): Altimeter: My Elevation Now
 Subtitle (27/30): Air Pressure Tracker, Gauge
 Keywords (98/100): barometer,barometric,altitude,atmospheric,mbar,weather,fishing,hiking,headache,migraine,joint,pain
 
-As briefed the keyword list was 107 bytes, over the 100 limit. `hpa` and `inhg` were dropped because both are already indexed from the English listing (the subtitle and the keywords). Several more words repeat the English keywords (altitude, atmospheric, mbar, weather, fishing, headache, migraine); swapping them for new words would widen the reach. Kept as briefed apart from the two.
+As briefed the keyword list was 107 bytes, over the 100 limit. `hpa` and `inhg` were dropped because both are already indexed from the English listing (the subtitle and the keywords). Several more words repeat the English keywords (altitude, atmospheric, mbar, weather, fishing, headache, migraine); swapping them for new words would widen the reach. Kept as briefed apart from the two (Brian's decision, Nov 27, 2026).
 
 Promotional text (es-MX): same as English. Description (es-MX): the English description; the app's own text is in English.
 

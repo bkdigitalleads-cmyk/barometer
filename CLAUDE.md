@@ -53,6 +53,6 @@ App #21 in Brian's iOS app portfolio (seller bkdigitalleads-cmyk). Expo SDK 57, 
 
 - Type check: `npx tsc --noEmit`. Unit checks: `npm test`. Bundle check: `npx expo export --platform ios`. Config: `npx expo config --type introspect`.
 - Pure logic has no React or native imports (it imports with a `.ts` extension so Node runs it directly), so `npm test` checks exactly what the app runs.
-- Icon concepts: `node store/icon.js options` (uses the preinstalled Playwright and Chromium); `node store/icon.js` writes the shipped icon files from `CHOSEN` (null: a plain stand-in tile until Brian picks).
+- Icon: `node store/icon.js` writes the shipped icon files from `CHOSEN`, which is 'ridge' (Brian's pick, Nov 27, 2026); change it only when Brian picks again. `node store/icon.js options` redraws the option sheet. Both use the preinstalled Playwright and Chromium.
 - Simulator (needs Xcode): Expo Go does not work (RevenueCat and the Swift module need a development build). The simulator has no pressure sensor (the app shows the no-sensor screen) and does not run background tasks.
 - Real-device check: TestFlight build from the EAS workflow, on Brian's iPhone. NOTES.md has the TestFlight checklist.

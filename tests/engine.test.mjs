@@ -266,7 +266,7 @@ test('website: landing, privacy, support with an FAQ, sitemap and robots; the su
   assert.match(read('docs/robots.txt'), /barometer\/sitemap\.xml/);
 });
 
-test('design: every brief screen rendered at 393x852 points (2x), light and dark; three icon options, none picked', () => {
+test('design: every brief screen rendered at 393x852 points (2x), light and dark; three icon options, Ridge picked', () => {
   const need = ['01-gauge', '02-altimeter', '03-chart-24h', '04-chart-7d', '05-note-add', '06-notes', '07-alert', '08-export', '09-paywall-onboarding', '10-paywall-in-app', '11-settings', '12-onboarding-1', '13-onboarding-2', '14-onboarding-3', '15-notifications'];
   for (const n of need)
     for (const s of ['light', 'dark']) {
@@ -277,8 +277,22 @@ test('design: every brief screen rendered at 393x852 points (2x), light and dark
       assert.equal(b.readUInt32BE(20), 1704);
     }
   assert.ok(existsSync(`${ROOT}docs/design/icon-options.png`));
-  assert.match(read('store/icon.js'), /const CHOSEN = null;/);
-  assert.match(read('docs/design/NOTES.md'), /Not picked; Brian picks\./);
+  assert.match(read('store/icon.js'), /const CHOSEN = 'ridge';/);
+  assert.match(read('docs/design/NOTES.md'), /\*\*Chosen \(Nov 27, 2026\): 3, Ridge\.\*\*/);
+});
+
+test('icon: the shipped files are Ridge, 1024 square RGB with no alpha, the fog tile; the adaptive background matches; the site logo has clear corners', () => {
+  const b = readFileSync(`${ROOT}assets/icon.png`);
+  assert.equal(b.readUInt32BE(16), 1024);
+  assert.equal(b.readUInt32BE(20), 1024);
+  assert.equal(b[24], 8);
+  assert.equal(b[25], 2, 'RGB, no alpha channel');
+  const app = JSON.parse(read('app.json')).expo;
+  assert.equal(app.android.adaptiveIcon.backgroundColor, '#ECEEEA');
+  assert.match(read('store/icon.js'), /ridge: \(\) => `\n\s+<rect width="1024" height="1024" fill="#ECEEEA"\/>/);
+  const logo = readFileSync(`${ROOT}docs/icon-512.png`);
+  assert.equal(logo[25], 6, 'the website logo keeps an alpha channel for its rounded corners');
+  assert.match(read('docs/index.html'), /alt="Barometer app icon: a dial over a mountain ridge/);
 });
 
 test('fonts: only SIL OFL, with the licence; Archivo Tab digits are all one width', async () => {

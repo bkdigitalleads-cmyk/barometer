@@ -1,14 +1,14 @@
 // Icon concepts for Barometer, drawn as SVG and rendered with Playwright
 // (Chromium). `node store/icon.js options` writes docs/design/icon-options.png:
 // each concept large, and at 60 px on a light and a dark wallpaper.
-// `node store/icon.js` writes the shipped icon files from CHOSEN; until Brian
-// picks (CHOSEN is null) it writes a plain stand-in tile.
+// `node store/icon.js` writes the shipped icon files from CHOSEN (Brian picked
+// 3, Ridge, on Nov 27, 2026; null would write a plain stand-in tile).
 // No letters, no weather symbols, no brand marks.
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
-const CHOSEN = null;
+const CHOSEN = 'ridge';
 
 const ROOT = path.join(__dirname, '..');
 const TEAL = '#0B6E66';
@@ -69,10 +69,10 @@ const CONCEPTS = {
 
 const svg = (inner, size = 1024, round = 0) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 1024 1024"><defs><clipPath id="c"><rect width="1024" height="1024" rx="${round}"/></clipPath></defs><g clip-path="url(#c)">${inner}</g></svg>`;
 
-async function shoot(page, html, w, h, out) {
+async function shoot(page, html, w, h, out, transparent = false) {
   await page.setViewportSize({ width: w, height: h });
-  await page.setContent(`<html><body style="margin:0">${html}</body></html>`);
-  await page.screenshot({ path: out, omitBackground: false });
+  await page.setContent(`<html><body style="margin:0;background:${transparent ? 'transparent' : '#FFFFFF'}">${html}</body></html>`);
+  await page.screenshot({ path: out, omitBackground: transparent });
 }
 
 async function options(page) {
@@ -99,7 +99,8 @@ async function shipped(page) {
   await shoot(page, `<div style="width:512px;height:512px;background:#0A0F12;display:flex;align-items:center;justify-content:center">${svg(inner, 320, 72)}</div>`, 512, 512, path.join(ROOT, 'assets/splash-icon-dark.png'));
   await shoot(page, svg(inner, 48, 0), 48, 48, path.join(ROOT, 'assets/favicon.png'));
   await shoot(page, svg(inner, 180, 0), 180, 180, path.join(ROOT, 'docs/apple-touch-icon.png'));
-  await shoot(page, svg(inner, 512, 112), 512, 512, path.join(ROOT, 'docs/icon-512.png'));
+  // The website logo: rounded, with clear corners so it sits on the light and the dark page.
+  await shoot(page, svg(inner, 512, 112), 512, 512, path.join(ROOT, 'docs/icon-512.png'), true);
 }
 
 (async () => {

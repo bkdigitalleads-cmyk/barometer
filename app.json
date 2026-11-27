@@ -20,7 +20,7 @@
     "android": {
       "package": "com.bwk.barometer",
       "adaptiveIcon": {
-        "backgroundColor": "#0E3B3A",
+        "backgroundColor": "#ECEEEA",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false
