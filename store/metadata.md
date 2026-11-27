@@ -2,7 +2,7 @@
 
 Everything here is pasted into App Store Connect by Brian and Cowork. No em dashes anywhere, no brand names, no "Unlock", "Premium", "Seamless", "Effortless", "Welcome", "Let's" or exclamation marks. Never "storm warning", "forecast" or "predict", and nothing medical (no "prevents", "treats" or "predicts migraines"); health words appear only as note labels a person picks, and in the keyword fields.
 
-App record: bundle id com.bwk.barometer, SKU barometer, ASC app id 6840171467 (eas.json `ascAppId`). RevenueCat public iOS key in app.json `extra.revenueCatApiKeyIos` (from Cowork, Nov 27, 2026). Still a placeholder: app.json `extra.eas.projectId` (Expo project bkdeveloper123/barometer), a `TODO_COWORK_...` string until Cowork sends it.
+App record: bundle id com.bwk.barometer, SKU barometer, ASC app id 6840171467 (eas.json `ascAppId`). RevenueCat public iOS key in app.json `extra.revenueCatApiKeyIos` (from Cowork, Nov 27, 2026). Expo project bkdeveloper123/barometer (projectId e34c37bf-76bb-4de5-a5da-1c98131c247e, app.json `extra.eas.projectId`).
 
 ## Name (30/30)
 Barometer: Barometric Pressure

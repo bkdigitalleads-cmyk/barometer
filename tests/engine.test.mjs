@@ -136,7 +136,8 @@ test('app.json: identity, iPhone only, plugins (background readings, push entitl
   // From Cowork, Nov 27: the public RevenueCat SDK key. The Expo project id comes later.
   assert.equal(app.extra.revenueCatApiKeyIos, 'appl_vsUTOQSBmWxAOEuwbshqWvuMqdC');
   assert.match(app.extra.revenueCatApiKeyIos, /^appl_/);
-  assert.match(app.extra.eas.projectId, /^TODO_COWORK_/);
+  // Expo project bkdeveloper123/barometer, from Cowork, Nov 27.
+  assert.equal(app.extra.eas.projectId, 'e34c37bf-76bb-4de5-a5da-1c98131c247e');
   const eas = JSON.parse(read('eas.json'));
   assert.equal(eas.cli.appVersionSource, 'local');
   assert.equal(eas.build.production.autoIncrement, false);
@@ -144,6 +145,21 @@ test('app.json: identity, iPhone only, plugins (background readings, push entitl
   assert.match(read('docs/index.html'), /href="https:\/\/apps\.apple\.com\/app\/id6840171467"/);
   const deploy = read('.eas/workflows/deploy.yml');
   for (const p of ['app.json', 'src/**', 'assets/**', 'modules/**']) assert.ok(deploy.includes(`'${p}'`));
+});
+
+test('placeholders: none left anywhere in the repo (app, modules, plugins, docs, store, notes, tests, workflows)', () => {
+  const mark = new RegExp(['TODO', 'COWORK'].join('_'));
+  const files = [
+    ...['app.json', 'eas.json', 'package.json', 'App.tsx', 'index.ts', 'CLAUDE.md', 'NOTES.md', 'README.md', 'AGENTS.md'].map((f) => `${ROOT}${f}`),
+    ...walk(`${ROOT}src`, ['.ts', '.tsx']),
+    ...walk(`${ROOT}modules`, ['.ts', '.swift', '.json', '.podspec']),
+    ...walk(`${ROOT}plugins`, ['.js']),
+    ...walk(`${ROOT}docs`, ['.html', '.md', '.xml', '.txt']),
+    ...walk(`${ROOT}store`, ['.md', '.js', '.py']),
+    ...walk(`${ROOT}tests`, ['.mjs']),
+    ...walk(`${ROOT}.eas`, ['.yml']),
+  ];
+  for (const f of files) assert.doesNotMatch(readFileSync(f, 'utf8'), mark, f);
 });
 
 test('products: ids, packages, entitlement and offering as briefed', () => {

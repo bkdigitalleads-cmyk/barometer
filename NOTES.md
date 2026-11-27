@@ -2,6 +2,8 @@
 
 Newest first. One entry per commit: date, version/build, what changed and why, and how it was checked.
 
+- 2026-11-27: 1.0.0 build 1, the last value from Cowork (same branch claude/barometer-1.0.0 and PR, no merge, no EAS; version and build number unchanged): app.json `extra.eas.projectId` is e34c37bf-76bb-4de5-a5da-1c98131c247e (Expo project bkdeveloper123/barometer; owner bkdeveloper123 and slug barometer already matched). No placeholder is left anywhere in the repo; a new check looks for one across the app, modules, plugins, docs, store, notes, tests and workflows. Checked: `npx tsc --noEmit` clean, `npm test` passing, `npx expo config --type introspect` shows the project id, owner and slug.
+
 - 2026-11-27: 1.0.0 build 1, setup values from Cowork (same branch claude/barometer-1.0.0 and PR, no merge, no EAS; version and build number unchanged).
   - app.json `extra.revenueCatApiKeyIos` is the public RevenueCat iOS SDK key (32 characters, starts with `appl_`, so purchases turn on in a real build). eas.json `ascAppId` is 6840171467. The website's App Store button and its JSON-LD now point at apps.apple.com/app/id6840171467. Still a placeholder: app.json `extra.eas.projectId`, which Cowork sends later.
   - Checked: `npx tsc --noEmit` clean; `npm test` passing (the config check now asserts the exact key and app id, that the key starts with appl_, that the project id is still a placeholder, and the site link); `npx expo config --type introspect` shows the key and `ios.entitlements` `{}`.
