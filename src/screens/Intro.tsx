@@ -11,7 +11,7 @@ import { chartData } from '../chart';
 import { HOUR } from '../readings';
 import { ALERT_TITLE } from '../alerts';
 import { formatPressure } from '../units';
-import { sampleReadings } from '../sample';
+import { sampleDay } from '../sample';
 import Chart from '../ui/Chart';
 import Dial from '../ui/Dial';
 import Glyph from '../ui/Glyph';
@@ -94,7 +94,7 @@ function ChartShow({ theme, width }: { theme: Theme; width: number }) {
   const data = useData();
   const d = useMemo(() => {
     const end = Date.now();
-    return chartData(sampleReadings(end, 2), end - 24 * HOUR, end);
+    return chartData(sampleDay(end), end - 24 * HOUR, end);
   }, []);
   return (
     <Plate theme={theme} style={{ paddingVertical: space.m, alignSelf: 'stretch' }}>

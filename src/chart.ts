@@ -127,7 +127,7 @@ export interface Scale {
   decimals: number;
 }
 
-/** At least this many hPa top to bottom, so a steady day does not look stormy. */
+/** At least this many hPa top to bottom, so a steady day does not look wild. */
 export const MIN_SPAN_HPA = 6;
 
 const STEPS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];

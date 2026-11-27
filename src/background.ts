@@ -69,7 +69,12 @@ async function writeState(db: Db, s: AlertState): Promise<void> {
   await repo.kvSet(db, STATE_KEY, JSON.stringify(s));
 }
 
-/** After a reading is stored while the app is open: the alert check. Returns the text when it fired. */
+/**
+ * After a reading is stored while the app is open: the alert check. When
+ * it fires, a local notification (shown as a banner while the app is
+ * open); returns the text only when notifications are off, so the app can
+ * show it on screen instead.
+ */
 export async function checkAfterStore(db: Db, opts: { active: boolean; thresholdHpa: number; unit: PressureUnit; locale: string; now: number }): Promise<string | null> {
   if (!opts.active) return null;
   const readings = await repo.readingsSince(db, opts.now - ALERT_WINDOW_MS - HOUR);
@@ -78,11 +83,13 @@ export async function checkAfterStore(db: Db, opts: { active: boolean; threshold
   await writeState(db, afterAlert(hit));
   const body = alertText(hit, opts.unit, opts.locale);
   try {
+    const perm = await Notifications.getPermissionsAsync();
+    if (!perm.granted) return body;
     await Notifications.scheduleNotificationAsync({ identifier: `barometer.alert.${Math.round(hit.at)}`, content: { title: ALERT_TITLE, body }, trigger: null });
+    return null;
   } catch {
-    // notifications off: the app shows it on screen instead
+    return body;
   }
-  return body;
 }
 
 export const refreshStatus = Baro.refreshStatus;

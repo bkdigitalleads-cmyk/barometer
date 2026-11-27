@@ -5,7 +5,7 @@ import { useTheme, space, type, radius } from '../theme';
 import { useData } from '../data';
 import { useApp } from '../state';
 import { alertActive, canAlert } from '../gates';
-import { ALERT_STEPS_HPA, ALERT_TIMING_TEXT, ALERT_TITLE, alertText } from '../alerts';
+import { ALERT_IGNORE_ABOVE_HPA, ALERT_STEPS_HPA, ALERT_TIMING_TEXT, ALERT_TITLE, alertText } from '../alerts';
 import { refreshStatus } from '../background';
 import { requestReminderPermission } from '../reminder';
 import { formatChange } from '../units';
@@ -71,7 +71,7 @@ export default function AlertSetting({ onBack }: { onBack: () => void }) {
             options={ALERT_STEPS_HPA.map((h) => ({ id: String(h), label: formatChange(h, unit, loc), a11y: `${formatChange(h, unit, loc)} ${unit}` }))}
           />
           <Small theme={theme} style={{ marginTop: space.s, paddingHorizontal: space.xs }}>
-            {ALERT_STEPS_HPA.map((h) => `${h} hPa`).join(', ')} in hPa. Changes over 15 hPa in three hours come from going up or down (a lift, a hill road, a plane) and do not alert.
+            {unit === 'hPa' || unit === 'mbar' ? '' : `${ALERT_STEPS_HPA[0]} to ${ALERT_STEPS_HPA[ALERT_STEPS_HPA.length - 1]} hPa. `}A change of more than {formatChange(ALERT_IGNORE_ABOVE_HPA, unit, loc)} {unit} in three hours comes from going up or down (a lift, a hill road, a plane), so it does not alert.
           </Small>
         </View>
 

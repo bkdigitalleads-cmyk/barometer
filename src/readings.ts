@@ -5,7 +5,7 @@
  * sensor. They are stored while the app is open (one every five minutes,
  * the median of the samples just before) and whenever iOS lets the app
  * check in the background (modules/baro-background). Nothing else makes a
- * reading: no server, no forecast, no other phone.
+ * reading: no server, no weather service, no other phone.
  */
 import { formatChange, type PressureUnit } from './units.ts';
 

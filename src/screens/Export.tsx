@@ -3,7 +3,9 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, useWindowDimensions, 
 import { useTheme, space } from '../theme';
 import { useData } from '../data';
 import { useApp } from '../state';
-import { canExport, historyStart } from '../gates';
+import { canExport } from '../gates';
+import { getDb } from '../db/native';
+import * as repo from '../db/repo';
 import { rangeMs, type RangeId } from '../chart';
 import { paperForRegion } from '../pdf/layout';
 import { chartPage, chartPdf, pageKit, type PageKit } from '../pageAssets';
@@ -52,8 +54,9 @@ export default function Export({ onBack }: { onBack: () => void }) {
     setBusy(how);
     try {
       if (how === 'csv') {
-        const start = historyStart(true, now);
-        const uri = writeCsvFile(csvFileName(dayKey(now)), readingsCsv(data.readings.filter((r) => r.t >= start), data.notes, unit));
+        // Every stored reading, not only the month the charts keep in memory.
+        const all = await repo.readingsSince(await getDb(), -Infinity);
+        const uri = writeCsvFile(csvFileName(dayKey(now)), readingsCsv(all, data.notes, unit));
         await shareFileAt(uri, 'csv', 'Barometer readings');
         say('CSV ready.');
       } else {

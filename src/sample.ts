@@ -25,8 +25,9 @@ export function sampleReadings(end: number, days = 8): Reading[] {
   for (let t = start; t <= end; t += 5 * MINUTE) {
     const local = new Date(t);
     const hr = local.getHours() + local.getMinutes() / 60;
-    const open = (hr >= 7 && hr < 8.5) || (hr >= 18.5 && hr < 21.5) || t > end - 2.2 * HOUR;
-    const background = !open && Math.round((t - start) / MINUTE) % 200 === 0 && hr > 9 && hr < 23;
+    const open = (hr >= 7 && hr < 8.5) || (hr >= 18.5 && hr < 21.5) || t > end - 3.3 * HOUR;
+    // iOS lets the app check every couple of hours or so while closed, less in the small hours.
+    const background = !open && Math.round((t - start) / MINUTE) % 150 === 0 && (hr < 1 || hr > 6);
     if (open || background) {
       const jitter = Math.sin(t / 7_919) * 0.06;
       out.push({ t, hpa: Math.round((samplePressure(t, end) + jitter) * 100) / 100, source: open ? 'open' : 'background' });
@@ -35,11 +36,25 @@ export function sampleReadings(end: number, days = 8): Reading[] {
   return out;
 }
 
+/**
+ * A full day for the onboarding chart: a reading every five minutes,
+ * except a stretch overnight when the app was closed.
+ */
+export function sampleDay(end: number): Reading[] {
+  const out: Reading[] = [];
+  for (let t = end - 24 * HOUR; t <= end; t += 5 * MINUTE) {
+    const ago = (end - t) / HOUR;
+    if (ago > 9 && ago < 14) continue;
+    out.push({ t, hpa: Math.round(samplePressure(t + 30 * HOUR, end) * 100) / 100, source: 'open' });
+  }
+  return out;
+}
+
 export function sampleNotes(end: number): Note[] {
-  const at = (hoursAgo: number) => end - hoursAgo * HOUR;
-  return [
-    { id: 's1', t: at(44), label: 'Headache', hpa: samplePressure(at(44), end), changeHpa: -3.1, createdAt: at(44) },
-    { id: 's2', t: at(20), label: 'Fishing', hpa: samplePressure(at(20), end), changeHpa: 1.4, createdAt: at(20) },
-    { id: 's3', t: at(1.5), label: 'Hike', hpa: samplePressure(at(1.5), end), changeHpa: 0.4, createdAt: at(1.5) },
-  ];
+  const note = (id: string, hoursAgo: number, label: string): Note => {
+    const t = end - hoursAgo * HOUR;
+    const hpa = samplePressure(t, end);
+    return { id, t, label, hpa, changeHpa: hpa - samplePressure(t - 3 * HOUR, end), createdAt: t };
+  };
+  return [note('s1', 46, 'Headache'), note('s2', 20, 'Fishing'), note('s3', 1.5, 'Hike')];
 }

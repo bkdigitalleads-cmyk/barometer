@@ -71,7 +71,7 @@ export default function History({ onNote, onExport, onAlert }: { onNote: () => v
           <Stat theme={theme} label="Now" value={sum ? formatPressure(sum.last.hpa, unit, loc) : '-'} />
           <Stat theme={theme} label="High" value={sum ? formatPressure(sum.high.hpa, unit, loc) : '-'} />
           <Stat theme={theme} label="Low" value={sum ? formatPressure(sum.low.hpa, unit, loc) : '-'} />
-          <Stat theme={theme} label={`Change, ${unit}`} value={sum ? `${sum.change < 0 ? '-' : '+'}${formatChange(sum.change, unit, loc)}` : '-'} />
+          <Stat theme={theme} label="Change" value={sum ? `${sum.change < 0 ? '-' : '+'}${formatChange(sum.change, unit, loc)}` : '-'} />
         </View>
         <Chart
           theme={theme}
@@ -134,7 +134,7 @@ function NoteLine({ theme, n, first, number, unit, locale, now, onLongPress }: {
   return (
     <Tap onLongPress={onLongPress} delayLongPress={450} style={[styles.note, !first && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }]} pressedStyle={{ backgroundColor: theme.raised }} accessibilityLabel={`${n.label}, ${formatMoment(n.t, now, locale)}, ${n.hpa != null ? `${formatPressure(n.hpa, unit, locale)} ${unit}` : 'no reading'}, ${trend}`} accessibilityHint="Hold to delete">
       <View style={[styles.badge, { backgroundColor: number > 0 ? theme.ink : theme.raised }]}>
-        <Text style={[type.label, { color: number > 0 ? theme.bg : theme.inkSoft, letterSpacing: 0, fontSize: 12 }]}>{number > 0 ? String(number) : ''}</Text>
+        {number > 0 ? <Text style={[type.label, { color: theme.bg, letterSpacing: 0, fontSize: 12 }]}>{String(number)}</Text> : <Glyph name="tag" size={14} color={theme.inkSoft} weight={2} />}
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[type.strong, { color: theme.ink }]} numberOfLines={1}>
