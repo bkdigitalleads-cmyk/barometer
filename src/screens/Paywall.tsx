@@ -11,7 +11,7 @@ import { cancelTrialReminder, scheduleTrialReminderIfTrial } from '../reminder';
 import { disclosureText, planOrder, planTitle, planTypeOf, preselect, PlanType } from '../offer';
 import { TERMS_URL } from '../links';
 import Glyph from '../ui/Glyph';
-import { MainButton, Press, RoundButton } from '../ui/Kit';
+import { Action, Tap, Knob } from '../ui/Kit';
 import { MODAL_ANIMATION } from '../ui/motion';
 
 /** On the first-launch paywall the close button appears after this delay. */
@@ -19,26 +19,25 @@ const ONBOARDING_CLOSE_DELAY_MS = 3000;
 
 /** The headline and one line, by why the paywall opened. */
 const REASON: Record<PaywallReason, { title: string; line: string }> = {
-  save: { title: 'Keep every count.', line: 'Save as many counts as you like and see them all in History, by day and by till.' },
-  sheet: { title: 'A count sheet for every close.', line: 'Share, print or save a signed count sheet for every count, and export History as CSV.' },
-  csv: { title: 'Your whole history in a spreadsheet.', line: 'Export every saved count as CSV, any time, and a count sheet for every close.' },
-  till: { title: 'Count more than one till.', line: 'Keep the front register, the bar and the safe apart, each with its own float and History.' },
-  deposit: { title: 'Know what to bank.', line: 'Pick the float to leave and see which notes and coins go in the deposit.' },
-  rows: { title: 'Count checks and vouchers too.', line: 'Add your own rows, like checks or gift vouchers, entered as an amount.' },
-  currency: { title: 'Count in any of six currencies.', line: 'Dollars, euros, pounds and pesos, with a currency for each till.' },
-  pro: { title: 'Cash Counter Pro.', line: 'Every saved count, more tills, count sheets and CSV, the deposit helper, your own rows and every currency.' },
+  range: { title: 'See the last week and month.', line: 'The 7 day and 30 day charts, from every reading kept on this iPhone.' },
+  alert: { title: 'A heads-up on a big change.', line: 'An alert when the pressure rises or falls by the amount you choose within three hours.' },
+  note: { title: 'Tag every moment.', line: 'As many notes as you like, each on the chart with the pressure and trend at that moment.' },
+  export: { title: 'Take the chart with you.', line: 'A one-page PDF chart and a CSV of every reading and note, to share or print.' },
+  calibrate: { title: 'Set your own elevation.', line: 'Type the elevation where you are for sea level pressure, no location needed.' },
+  dial: { title: 'Choose your dial.', line: 'Marine and Plain dials, for a boat, a wall or a desk.' },
+  pro: { title: 'Barometer Pro.', line: 'The week and month charts, change alerts, notes on the chart, PDF and CSV export, your own elevation and the dial styles.' },
 };
 
 /**
- * Two paywalls in one component (the engine's, from Estimate Maker,
- * Signature Maker 1.0.2 and Odo 1.0.6), with three rows: cash_pro_weekly
- * ($rc_weekly, 3-day free trial), cash_pro_yearly ($rc_annual) and
- * cash_pro_lifetime ($rc_lifetime, one-time).
- *  - onboarding: after the three intro screens, "What are you counting?"
- *    and the trial and reminder screens. Trial wording only when this
- *    Apple ID can get the trial; the close button appears after 3 seconds.
- *  - in-app (the fourth save, the second count sheet, a second till, the
- *    deposit helper, custom rows, another currency, or Settings): no trial
+ * Two paywalls in one component (the engine's, from Cash Counter, Estimate
+ * Maker, Signature Maker 1.0.2 and Odo 1.0.6), with three rows:
+ * baro_pro_weekly ($rc_weekly, with the free trial), baro_pro_yearly
+ * ($rc_annual) and baro_pro_lifetime ($rc_lifetime, one-time).
+ *  - onboarding: after the three intro screens, notifications, and the
+ *    trial and reminder screens. Trial wording only when this Apple ID can
+ *    get the trial; the close button appears after 3 seconds.
+ *  - in-app (a locked chart range, turning on the alert, a second note,
+ *    export, a typed elevation, a dial style, or Settings): no trial
  *    advertised in the headline.
  * Weekly is listed first and preselected on both. Prices and trial lengths
  * always come from StoreKit. Restore on both.
@@ -93,9 +92,9 @@ export default function PaywallModal({ privacyUrl, onboarding = false, hero }: {
       setIsPro(true);
       hidePaywall();
       const reminded = await scheduleTrialReminderIfTrial();
-      // On the onboarding paywall the app opening with Pro on says the rest. (The only rating ask is after a later-day save.)
+      // On the onboarding paywall the app opening with Pro on says the rest.
       if (!onboarding) {
-        Alert.alert('Pro is on', `Every count, till and count sheet is yours.${reminded ? ' You will get a reminder the day before the trial ends.' : ''}`);
+        Alert.alert('Pro is on', `The week and month charts, alerts, notes and export are yours.${reminded ? ' You will get a reminder the day before the trial ends.' : ''}`);
       }
     } else if (res.ok) {
       Alert.alert('Paid, but Pro is not showing', 'The App Store can lag a minute. Tap Restore purchases in a moment and it turns on.');
@@ -113,9 +112,9 @@ export default function PaywallModal({ privacyUrl, onboarding = false, hero }: {
     if (res.ok && res.isPro) {
       setIsPro(true);
       hidePaywall();
-      Alert.alert('Pro is back on', 'Every count, till and count sheet is open again.');
+      Alert.alert('Pro is back on', 'The week and month charts, alerts, notes and export are open again.');
     } else if (res.ok) {
-      Alert.alert('Nothing to restore', 'This Apple ID has no Cash Counter Pro purchase.');
+      Alert.alert('Nothing to restore', 'This Apple ID has no Barometer Pro purchase.');
     } else {
       Alert.alert('Restore did not work', res.error ?? 'Try once more.');
     }
@@ -145,7 +144,7 @@ export default function PaywallModal({ privacyUrl, onboarding = false, hero }: {
         <ScrollView contentContainerStyle={styles.scroll}>
           {/* Holds its space while hidden so nothing jumps when the close button appears. */}
           <View style={[styles.closeRow, { opacity: canClose ? 1 : 0 }]} accessibilityElementsHidden={!canClose} importantForAccessibility={canClose ? 'auto' : 'no-hide-descendants'}>
-            <RoundButton theme={theme} glyph="close" label="Close" onPress={close} disabled={!canClose} color={theme.inkSoft} />
+            <Knob theme={theme} glyph="close" label="Close" onPress={close} disabled={!canClose} color={theme.inkSoft} />
           </View>
 
           {hero ? <View style={styles.pad}>{hero}</View> : null}
@@ -153,14 +152,14 @@ export default function PaywallModal({ privacyUrl, onboarding = false, hero }: {
             {headline}
           </Text>
           <Text style={[type.body, styles.pad, styles.line, { color: theme.inkSoft }]}>{copy.line}</Text>
-          <Text style={[type.body, styles.pad, styles.line, { color: theme.inkSoft }]}>Counting stays free, and every count you saved stays on your iPhone.</Text>
+          <Text style={[type.body, styles.pad, styles.line, { color: theme.inkSoft }]}>The live barometer, the altimeter and the last 24 hours stay free. Every reading stays on your iPhone.</Text>
 
           {loading ? (
             <ActivityIndicator style={{ marginVertical: space.xl }} color={theme.inkSoft} />
           ) : packages.length === 0 || !isBillingAvailable() ? (
             <Text style={[type.body, styles.unavailable, { color: theme.inkSoft }]}>The App Store did not answer. Try again in a minute.</Text>
           ) : (
-            <View style={[styles.plans, compact && { marginTop: space.l }, { backgroundColor: theme.surface, borderColor: theme.edge }]} accessibilityRole="radiogroup">
+            <View style={[styles.plans, compact && { marginTop: space.l }, { backgroundColor: theme.face, borderColor: theme.edge }]} accessibilityRole="radiogroup">
               {packages.map((p, i) => {
                 const t = p.packageType as PlanType;
                 const on = selected?.identifier === p.identifier;
@@ -174,7 +173,7 @@ export default function PaywallModal({ privacyUrl, onboarding = false, hero }: {
                         ? `${weeklyTrial}, then ${p.product.priceString} a week`
                         : `${p.product.priceString} a week`;
                 return (
-                  <Press
+                  <Tap
                     key={p.identifier}
                     onPress={() => setSelected(p)}
                     style={[styles.plan, compact && styles.planCompact, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }, on && { backgroundColor: theme.raised }]}
@@ -189,7 +188,7 @@ export default function PaywallModal({ privacyUrl, onboarding = false, hero }: {
                       <Text style={[type.small, { color: theme.inkSoft }]}>{line}</Text>
                     </View>
                     <Text style={[type.strong, { color: theme.ink }, tabular]}>{p.product.priceString}</Text>
-                  </Press>
+                  </Tap>
                 );
               })}
             </View>
@@ -198,7 +197,7 @@ export default function PaywallModal({ privacyUrl, onboarding = false, hero }: {
 
         <View style={[styles.bottom, { borderTopColor: theme.edge, paddingBottom: Math.max(insets.bottom, space.m) }]}>
           {/* The button says Continue, never Subscribe. */}
-          <MainButton theme={theme} label={purchasing ? 'One moment' : 'Continue'} onPress={buy} disabled={purchasing || !selected || loading} />
+          <Action theme={theme} label={purchasing ? 'One moment' : 'Continue'} onPress={buy} disabled={purchasing || !selected || loading} />
           {selected && trialLabel(selected, trialEligible) ? (
             <View style={styles.checkLine}>
               <Glyph name="check" size={18} color={theme.ink} weight={2.2} />
@@ -210,7 +209,7 @@ export default function PaywallModal({ privacyUrl, onboarding = false, hero }: {
             Terms of Use (EULA) + Privacy Policy links live in the app itself,
             visible without scrolling and rendered even with no products.
           */}
-          <Text style={[styles.legalText, { color: theme.inkFaint }]}>Cash Counter Pro. {disclosure}</Text>
+          <Text style={[styles.legalText, { color: theme.inkFaint }]}>Barometer Pro. {disclosure}</Text>
           <View style={styles.legalLinks}>
             <Text style={[styles.legalLink, { color: theme.inkSoft }]} onPress={onRestore} accessibilityRole="button">
               {restoring ? 'Restoring' : 'Restore purchases'}
@@ -242,11 +241,11 @@ const styles = StyleSheet.create({
   closeRow: { alignItems: 'flex-end', paddingHorizontal: space.s, paddingTop: space.xs },
   pad: { paddingHorizontal: space.xl },
   line: { marginTop: space.s },
-  plans: { marginTop: space.xl, marginHorizontal: space.l, borderRadius: radius.large, borderWidth: 1, overflow: 'hidden' },
+  plans: { marginTop: space.xl, marginHorizontal: space.l, borderRadius: radius.plate, borderWidth: 1, overflow: 'hidden' },
   plan: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 64, paddingHorizontal: space.l, paddingVertical: space.m },
   planCompact: { minHeight: 60, paddingVertical: space.s },
-  radio: { width: 24, height: 24, borderRadius: radius.round, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  radioDot: { width: 12, height: 12, borderRadius: radius.round },
+  radio: { width: 24, height: 24, borderRadius: radius.pill, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
+  radioDot: { width: 12, height: 12, borderRadius: radius.pill },
   unavailable: { textAlign: 'center', marginVertical: space.xl, paddingHorizontal: space.xl },
   bottom: { borderTopWidth: 1, paddingHorizontal: space.l, paddingTop: space.m, gap: space.s },
   checkLine: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s },

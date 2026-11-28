@@ -3,13 +3,11 @@ import { AppState as RNAppState } from 'react-native';
 import { initPurchases, getIsPro, checkPro, onProChange } from './purchases';
 import { syncTrialReminder } from './reminder';
 import { hasSandboxPro } from './testing';
-import { setReviewGuard } from './reviews';
+import { isTestBuildNative } from './background';
 import { kvGet, kvSet } from './store';
-import { parseIdList, PaywallReason, recordFree } from './gates';
+import type { PaywallReason } from './gates';
 
 export const ONBOARDED_KEY = 'flag.onboarded';
-const FREE_SHEETS_KEY = 'usage.freeSheets';
-const CSV_USED_KEY = 'usage.csvExports';
 /** Test builds only: Pro is ignored on this phone while this is on. */
 const ACT_FREE_KEY = 'test.actFree';
 
@@ -25,15 +23,6 @@ interface AppState {
   /** Opens the paywall; resolves with whether Pro is on once it closes. */
   askPro: (reason: PaywallReason) => Promise<boolean>;
   hidePaywall: () => void;
-  /** The counts whose sheet went out free (the first one). */
-  freeSheets: string[];
-  noteFreeSheet: (countId: string) => void;
-  /** CSV exports made so far on the free plan. */
-  csvUsed: number;
-  noteCsv: () => void;
-  resetFreeUse: () => void;
-  /** A count is in progress on the count screen (no rating prompt then). */
-  setCounting: (v: boolean) => void;
   notice: string | null;
   say: (text: string) => void;
 }
@@ -47,11 +36,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [actFree, setActFreeState] = useState(false);
   const [paywall, setPaywall] = useState<PaywallReason | null>(null);
   const resolver = useRef<((v: boolean) => void) | null>(null);
-  const [freeSheets, setFreeSheets] = useState<string[]>([]);
-  const [csvUsed, setCsvUsed] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const countingRef = useRef(false);
 
   const say = useCallback((text: string) => {
     if (noticeTimer.current) clearTimeout(noticeTimer.current);
@@ -62,8 +48,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        setFreeSheets(parseIdList(await kvGet(FREE_SHEETS_KEY)));
-        setCsvUsed(Math.max(0, Number(await kvGet(CSV_USED_KEY)) || 0));
         setActFreeState((await kvGet(ACT_FREE_KEY)) === '1');
       } catch {
         // unreadable storage -> defaults
@@ -105,9 +89,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   }, [ready]);
 
-  useEffect(() => setReviewGuard(() => countingRef.current), []);
-
-  const testBuild = __DEV__ || sandbox;
+  // Test builds only: development, a TestFlight build (its receipt is a
+  // sandbox one), or a phone whose Pro is a sandbox purchase. Never the App Store build.
+  const testBuild = __DEV__ || isTestBuildNative() || sandbox;
   const isPro = storePro && !(testBuild && actFree);
   const proRef = useRef(isPro);
   proRef.current = isPro;
@@ -137,28 +121,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [testBuild, actFree]
   );
 
-  const noteFreeSheet = useCallback((countId: string) => {
-    setFreeSheets((list) => {
-      const next = recordFree(list, countId);
-      if (next !== list) kvSet(FREE_SHEETS_KEY, JSON.stringify(next)).catch(() => {});
-      return next;
-    });
-  }, []);
-
-  const noteCsv = useCallback(() => {
-    setCsvUsed((n) => {
-      kvSet(CSV_USED_KEY, String(n + 1)).catch(() => {});
-      return n + 1;
-    });
-  }, []);
-
-  const resetFreeUse = useCallback(() => {
-    setFreeSheets([]);
-    setCsvUsed(0);
-    kvSet(FREE_SHEETS_KEY, '[]').catch(() => {});
-    kvSet(CSV_USED_KEY, '0').catch(() => {});
-  }, []);
-
   const setActFree = useCallback(
     async (v: boolean) => {
       if (!testBuild) return;
@@ -167,10 +129,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
     [testBuild]
   );
-
-  const setCounting = useCallback((v: boolean) => {
-    countingRef.current = v;
-  }, []);
 
   const value = useMemo<AppState>(
     () => ({
@@ -183,16 +141,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       paywall,
       askPro,
       hidePaywall,
-      freeSheets,
-      noteFreeSheet,
-      csvUsed,
-      noteCsv,
-      resetFreeUse,
-      setCounting,
       notice,
       say,
     }),
-    [ready, isPro, setIsPro, testBuild, actFree, setActFree, paywall, askPro, hidePaywall, freeSheets, noteFreeSheet, csvUsed, noteCsv, resetFreeUse, setCounting, notice, say]
+    [ready, isPro, setIsPro, testBuild, actFree, setActFree, paywall, askPro, hidePaywall, notice, say]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

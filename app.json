@@ -1,0 +1,75 @@
+{
+  "expo": {
+    "name": "Barometer",
+    "slug": "barometer",
+    "scheme": "barometer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#ECEEEA",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.bwk.barometer",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationCategoryType": "public.app-category.weather"
+      }
+    },
+    "android": {
+      "package": "com.bwk.barometer",
+      "adaptiveIcon": {
+        "backgroundColor": "#ECEEEA",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-sqlite",
+      "expo-localization",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Barometer reads the air pressure sensor in your iPhone to show the pressure, your elevation and how they change."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Only on the Altimeter tab, when you tap Use my location, to get a starting elevation. Your location stays on this iPhone.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "motionUsagePermission": "Barometer reads the air pressure sensor in your iPhone to show the pressure, your elevation and how they change.",
+          "isIosBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "backgroundColor": "#ECEEEA",
+          "dark": {
+            "image": "./assets/splash-icon-dark.png",
+            "backgroundColor": "#0A0F12"
+          }
+        }
+      ],
+      "./plugins/withBackgroundReadings",
+      "./plugins/withoutPushEntitlement"
+    ],
+    "extra": {
+      "revenueCatApiKeyIos": "appl_vsUTOQSBmWxAOEuwbshqWvuMqdC",
+      "eas": {
+        "projectId": "e34c37bf-76bb-4de5-a5da-1c98131c247e"
+      }
+    },
+    "owner": "bkdeveloper123"
+  }
+}

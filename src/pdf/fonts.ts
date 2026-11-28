@@ -1,5 +1,5 @@
 /**
- * The count sheet's fonts (Barlow Tab, SIL OFL, assets/fonts) and text
+ * The PDF chart's fonts (Archivo Tab, SIL OFL, assets/fonts) and text
  * measuring with fontkit, exactly the way pdf-lib measures when it sets the
  * text: glyph advances, no kerning, no ligatures. Pure; the app hands in
  * the bytes (sheetAssets.ts), the tests read them from disk.
@@ -11,9 +11,9 @@ export type FontBytes = Record<FontKey, Uint8Array>;
 
 /** The files behind each key, under assets/fonts. */
 export const FONT_FILES: Record<FontKey, string> = {
-  regular: 'BarlowTab-Regular.ttf',
-  medium: 'BarlowTab-Medium.ttf',
-  bold: 'BarlowTab-Bold.ttf',
+  regular: 'ArchivoTab-Regular.ttf',
+  medium: 'ArchivoTab-Medium.ttf',
+  bold: 'ArchivoTab-Bold.ttf',
 };
 
 /** OpenType features off, so measured widths are what pdf-lib sets. */

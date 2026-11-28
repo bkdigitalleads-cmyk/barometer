@@ -1,14 +1,14 @@
 /**
  * Removes the push entitlement (aps-environment) that expo-notifications'
- * config plugin adds. Cash Counter only schedules one local notification
- * (the trial reminder), which does not need it, and an App Store
+ * config plugin adds. Barometer only sends local notifications (the
+ * pressure change alert and the trial reminder), which do not need it, and an App Store
  * provisioning profile without the Push Notifications capability fails the
  * build when it is there.
  *
  * Listed last in app.json "plugins". Expo applies the expo-notifications
  * plugin after the app.json plugins, and mods run newest first, so this one
- * runs after it and has the last word. Same fix as Estimate Maker, Signature Maker, Migraine Log, Image to Text, Pumping,
- * Attend 1.0.5 and Odo 1.0.6.
+ * runs after it and has the last word. Same fix as Cash Counter, Estimate Maker, Signature Maker, Migraine Log,
+ * Image to Text, Pumping, Attend 1.0.5 and Odo 1.0.6.
  */
 const { withEntitlementsPlist } = require('expo/config-plugins');
 

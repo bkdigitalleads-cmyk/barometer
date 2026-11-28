@@ -6,32 +6,35 @@ import { getOffering } from '../purchases';
 import { getTrialEligibleIds, trialLabel } from '../trial';
 import { requestReminderPermission } from '../reminder';
 import { trialLength } from '../offer';
-import { COUNTING_FOR, CountingFor } from '../rules';
 import { useData } from '../data';
-import { CURRENCIES } from '../currencies';
-import { formatMoney, formatQty } from '../format';
-import { isoDay } from '../dates';
-import { sampleCount } from '../sample';
-import { sheetKit, sheetPage, SheetKit } from '../sheetAssets';
+import { chartData } from '../chart';
+import { HOUR } from '../readings';
+import { ALERT_TITLE } from '../alerts';
+import { formatPressure } from '../units';
+import { sampleDay } from '../sample';
+import Chart from '../ui/Chart';
+import Dial from '../ui/Dial';
 import Glyph from '../ui/Glyph';
-import { CashTile, DiffLine, SheetView } from '../ui/Cash';
-import { MainButton, Press, Slot, Tray } from '../ui/Kit';
+import { Action, Plate, Row, Tap } from '../ui/Kit';
 
 /**
  * First launch, in this order (App.tsx runs it):
- *   1-3. three short screens: count a till in under a minute; see at once
- *        if it is over or short; keep a record you can print
- *   4.   "What are you counting?", which only names the first till
- *   a.   TrialSteps "Try it free"                      } only when RevenueCat says this
- *   b.   TrialSteps "We'll remind you the day before"  } Apple ID can get the free trial
+ *   1-3. three short screens: your phone already measures air pressure;
+ *        see when it rises or falls; get a heads-up on a big change
+ *   4.   notifications, with the plain reason
+ *   a.   TrialSteps "Try it free"             } only when RevenueCat says this
+ *   b.   TrialSteps the reminder screen       } Apple ID can get the free trial
  *   then the onboarding paywall (close button after 3 seconds).
- * No name or email is asked, and no camera, location, contacts or photos.
+ * The first screen starts the sensor, so iOS asks for Motion & Fitness
+ * access with the dial in view. Location is not asked here; only on the
+ * Altimeter tab.
  */
-const PAGES: { title: string; line: string; show: 'count' | 'diff' | 'sheet' }[] = [
-  { title: 'Count a till in under a minute.', line: 'Big buttons for one thumb. Tap a number to type it, hold a row to add a roll.', show: 'count' },
-  { title: 'See at once if it is over or short.', line: 'Enter what the till should hold, or the float plus sales.', show: 'diff' },
-  { title: 'Keep a record you can print.', line: 'Every count saved by day, with a one-page count sheet to sign.', show: 'sheet' },
+const PAGES: { title: string; line: string; show: 'dial' | 'chart' | 'alert' }[] = [
+  { title: 'Your phone already measures air pressure.', line: 'Barometer reads the sensor inside this iPhone. No internet and no account.', show: 'dial' },
+  { title: 'See when it rises or falls.', line: 'Every reading is kept on this iPhone, so the chart shows the last day, week and month.', show: 'chart' },
+  { title: 'Get a heads-up on a big change.', line: 'An alert when the pressure rises or falls by the amount you choose within three hours.', show: 'alert' },
 ];
+const DOTS = PAGES.length + 1;
 
 interface TrialOffer {
   length: string;
@@ -58,133 +61,99 @@ function trialOffer(): Promise<TrialOffer | null> {
 
 export default function Intro({ onDone }: { onDone: () => void }) {
   const theme = useTheme();
+  const data = useData();
   const [step, setStep] = useState(0);
   useEffect(() => {
     trialOffer();
+    data.startSensor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const { width } = useWindowDimensions();
   const next = () => (step < PAGES.length - 1 ? setStep(step + 1) : onDone());
   const p = PAGES[step];
   const w = width - space.l * 2;
-  const visual = p.show === 'count' ? <CountShow theme={theme} /> : p.show === 'diff' ? <DiffShow theme={theme} /> : <SheetShow width={w} />;
-  return <Page key={step} theme={theme} title={p.title} line={p.line} visual={visual} dots={{ count: PAGES.length + 1, active: step }} button="Continue" onPress={next} />;
+  const visual = p.show === 'dial' ? <DialShow theme={theme} size={Math.min(w, 290)} /> : p.show === 'chart' ? <ChartShow theme={theme} width={w} /> : <AlertShow theme={theme} />;
+  return <Page key={step} theme={theme} title={p.title} line={p.line} visual={visual} dots={{ count: DOTS, active: step }} button="Continue" onPress={next} />;
 }
 
-function useSample() {
+/** The live dial, as on the gauge. */
+function DialShow({ theme, size }: { theme: Theme; size: number }) {
   const data = useData();
-  return useMemo(() => sampleCount(data.till.currency, isoDay(Date.now()), Date.now()), [data.till.currency]);
-}
-
-/** Three rows of the count, as they look on the count screen. */
-function CountShow({ theme }: { theme: Theme }) {
-  const data = useData();
-  const s = useSample();
-  const locale = data.locale.tag;
-  const dens = CURRENCIES[s.currency].denominations.filter((d) => d.shown);
-  const pick = [dens[2], dens[4], dens[dens.length - 4]].filter(Boolean);
-  const money = (m: number) => formatMoney(m, s.currency, locale);
+  const unit = data.prefs.pressureUnit;
+  const hpa = data.live?.hpa ?? null;
   return (
-    <View style={{ alignSelf: 'stretch', gap: space.s }} accessible accessibilityLabel="Rows of notes and coins with a minus and plus button and the number counted">
-      {pick.map((d) => (
-        <View key={d.id} style={[styles.showRow, { backgroundColor: theme.tile, borderColor: theme.edge }]}>
-          <CashTile theme={theme} d={d} />
-          <View style={{ flex: 1 }}>
-            <Text style={[type.small, { color: theme.inkSoft }]}>{d.name}</Text>
-            <Text style={[type.figure, { color: theme.ink, fontSize: 18 }]}>{money((s.pieces[d.id] ?? 0) * d.value)}</Text>
-          </View>
-          <View style={[styles.showStep, { backgroundColor: theme.surface, borderColor: theme.edge }]}>
-            <Glyph name="minus" size={24} color={theme.ink} weight={2.6} />
-          </View>
-          <View style={[styles.showQty, { borderColor: theme.ink }]}>
-            <Text style={[type.figure, { color: theme.ink, fontSize: 24 }]}>{formatQty(s.pieces[d.id] ?? 0, locale)}</Text>
-          </View>
-          <View style={[styles.showStep, { backgroundColor: theme.surface, borderColor: theme.edge }]}>
-            <Glyph name="plus" size={24} color={theme.ink} weight={2.6} />
-          </View>
-        </View>
-      ))}
+    <View style={{ alignItems: 'center', gap: space.s }}>
+      <Dial theme={theme} size={size} style="classic" unit={unit} hpa={hpa} caption="Sensor" />
+      <Text style={[type.figure, { color: theme.ink, fontSize: 30, lineHeight: 36 }]}>{hpa != null ? `${formatPressure(hpa, unit, data.locale.tag)} ${unit}` : ' '}</Text>
     </View>
   );
 }
 
-/** The total with its difference, as the bottom of the count screen shows it. */
-function DiffShow({ theme }: { theme: Theme }) {
+/** A made-up day on the chart, with a stretch the app was closed. */
+function ChartShow({ theme, width }: { theme: Theme; width: number }) {
   const data = useData();
-  const s = useSample();
-  const money = (m: number) => formatMoney(m, s.currency, data.locale.tag);
-  return (
-    <View style={[styles.diffCard, { backgroundColor: theme.tile, borderColor: theme.edge }]}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={[type.label, { color: theme.inkSoft }]}>Total</Text>
-        <Text style={[type.small, { color: theme.inkSoft, fontWeight: '600' }]}>Expected {money(s.total - (s.diff ?? 0))}</Text>
-      </View>
-      <Text style={[type.total, { color: theme.ink }]}>{money(s.total)}</Text>
-      <DiffLine theme={theme} diff={s.diff ?? 0} money={money} />
-    </View>
-  );
-}
-
-/** The top of a sample count sheet. */
-function SheetShow({ width }: { width: number }) {
-  const data = useData();
-  const s = useSample();
-  const [kit, setKit] = useState<SheetKit | null>(null);
-  useEffect(() => {
-    sheetKit().then(setKit, () => {});
+  const d = useMemo(() => {
+    const end = Date.now();
+    return chartData(sampleDay(end), end - 24 * HOUR, end);
   }, []);
-  const page = useMemo(() => (kit ? sheetPage(kit, s, data.paper, data.locale.tag) : null), [kit, s, data.paper, data.locale.tag]);
-  const h = Math.round(width * 1.02);
   return (
-    <View style={[styles.sheetCrop, { width, height: h }]}>
-      {page ? <SheetView page={page} width={width} label="A sample count sheet with the notes, coins, total and difference" /> : <ActivityIndicator color="#4E545C" style={{ marginTop: space.xxl }} />}
+    <Plate theme={theme} style={{ paddingVertical: space.m, alignSelf: 'stretch' }}>
+      <Chart theme={theme} data={d} range="24h" unit={data.prefs.pressureUnit} notes={[]} width={width - 2} height={220} locale={data.locale.tag} label="A sample chart of the last 24 hours, with a gap while the app was closed" />
+    </Plate>
+  );
+}
+
+/** What an alert looks like. */
+function AlertShow({ theme }: { theme: Theme }) {
+  return (
+    <View style={{ alignSelf: 'stretch', gap: space.m }} accessible accessibilityLabel="An example alert: Pressure fell 4 hPa in the last 3 hours.">
+      <View style={[styles.banner, { backgroundColor: theme.face, borderColor: theme.edge }]}>
+        <View style={[styles.appMark, { backgroundColor: theme.bezel }]}>
+          <Glyph name="gauge" size={20} color="#FFFFFF" weight={2.2} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[type.strong, { color: theme.ink, fontSize: 15 }]}>{ALERT_TITLE}</Text>
+          <Text style={[type.small, { color: theme.ink }]}>Pressure fell 4 hPa in the last 3 hours.</Text>
+        </View>
+      </View>
+      <View style={[styles.banner, { backgroundColor: theme.face, borderColor: theme.edge, opacity: 0.6, transform: [{ scale: 0.95 }] }]}>
+        <View style={[styles.appMark, { backgroundColor: theme.bezel }]}>
+          <Glyph name="gauge" size={20} color="#FFFFFF" weight={2.2} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[type.strong, { color: theme.ink, fontSize: 15 }]}>{ALERT_TITLE}</Text>
+          <Text style={[type.small, { color: theme.ink }]}>Pressure rose 3 hPa in the last 3 hours.</Text>
+        </View>
+      </View>
     </View>
   );
 }
 
-/** "What are you counting?" It only sets the first till's name. */
-export function WhatCounting({ onDone }: { onDone: (choice: CountingFor | null) => void }) {
+/** Notifications, with the plain reason. Asked once; either answer goes on. */
+export function NotifyStep({ onDone }: { onDone: () => void }) {
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
-  const [pick, setPick] = useState<CountingFor | null>(null);
+  const [waiting, setWaiting] = useState(false);
   return (
-    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, space.l) }]}>
-      <View style={styles.listPage}>
-        <Text style={[type.title, { color: theme.ink }]} accessibilityRole="header">
-          What are you counting?
-        </Text>
-        <Text style={[type.body, styles.line, { color: theme.inkSoft }]}>This names your first till. You can add more later.</Text>
-        <Tray theme={theme} style={{ marginTop: space.xl }}>
-          {COUNTING_FOR.map((c, i) => (
-            <Press
-              key={c.id}
-              onPress={() => setPick(c.id)}
-              style={[styles.need, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: theme.rule }, pick === c.id && { backgroundColor: theme.raised }]}
-              pressedStyle={{ backgroundColor: theme.raised }}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: pick === c.id }}
-              accessibilityLabel={c.label}
-            >
-              <View style={[styles.radio, { borderColor: pick === c.id ? theme.ink : theme.inkFaint }]}>{pick === c.id ? <View style={[styles.radioDot, { backgroundColor: theme.ink }]} /> : null}</View>
-              <View style={{ flex: 1 }}>
-                <Text style={[type.strong, { color: theme.ink }]}>{c.label}</Text>
-                <Text style={[type.small, { color: theme.inkSoft }]}>Till name: {c.till}</Text>
-              </View>
-            </Press>
-          ))}
-        </Tray>
-      </View>
-      <View style={styles.dots} accessible accessibilityLabel={`Page ${PAGES.length + 1} of ${PAGES.length + 1}`}>
-        {Array.from({ length: PAGES.length + 1 }, (_, i) => (
-          <View key={i} style={[styles.dot, { backgroundColor: i === PAGES.length ? theme.ink : theme.rule }, i === PAGES.length && styles.dotOn]} />
-        ))}
-      </View>
-      <View style={styles.footer}>
-        <MainButton theme={theme} label="Continue" onPress={() => onDone(pick)} disabled={!pick} />
-        <Press onPress={() => onDone(null)} accessibilityRole="button" style={styles.skip}>
-          <Text style={[type.body, { color: theme.inkSoft, textAlign: 'center' }]}>Skip</Text>
-        </Press>
-      </View>
-    </View>
+    <Page
+      theme={theme}
+      title="Allow notifications for change alerts."
+      line="Barometer sends one only when the pressure rises or falls by the amount you set, and once before a free trial ends. Nothing else."
+      dots={{ count: DOTS, active: PAGES.length }}
+      button="Allow notifications"
+      waiting={waiting}
+      visual={
+        <View style={[styles.bell, { backgroundColor: theme.face, borderColor: theme.edge }]}>
+          <Glyph name="bell" size={56} color={theme.ink} weight={1.8} />
+        </View>
+      }
+      onPress={async () => {
+        setWaiting(true);
+        await requestReminderPermission();
+        setWaiting(false);
+        onDone();
+      }}
+      secondary={{ label: 'Not now', onPress: onDone }}
+    />
   );
 }
 
@@ -226,11 +195,11 @@ export function TrialSteps({ onDone }: { onDone: () => void }) {
         onPress={() => setStep('remind')}
         noPayment
         visual={
-          <Tray theme={theme} style={{ alignSelf: 'stretch' }}>
-            <Slot theme={theme} first glyph="check" label="Today" sub="Every saved count, more tills, count sheets and the deposit helper." />
-            <Slot theme={theme} glyph="date" label="The day before it ends" sub="One reminder, so nothing surprises you." />
-            <Slot theme={theme} glyph="star" label={`After ${offer.length}`} sub={`${offer.then[0].toUpperCase()}${offer.then.slice(1)}. Cancel before then and pay nothing.`} />
-          </Tray>
+          <Plate theme={theme} style={{ alignSelf: 'stretch' }}>
+            <Row theme={theme} first glyph="check" label="Today" sub="The week and month charts, change alerts, notes on the chart and export." />
+            <Row theme={theme} glyph="calendar" label="The day before it ends" sub="One reminder, so nothing surprises you." />
+            <Row theme={theme} glyph="star" label={`After ${offer.length}`} sub={`${offer.then[0].toUpperCase()}${offer.then.slice(1)}. Cancel before then and pay nothing.`} />
+          </Plate>
         }
       />
     );
@@ -240,7 +209,7 @@ export function TrialSteps({ onDone }: { onDone: () => void }) {
     <Page
       theme={theme}
       title="We’ll remind you the day before it ends."
-      line="It is the only notification the app sends."
+      line="One reminder. Change alerts are the only other notifications."
       button="Continue"
       waiting={waiting}
       onPress={async () => {
@@ -264,6 +233,7 @@ function Page({
   waiting = false,
   noPayment = false,
   visual,
+  secondary,
 }: {
   theme: Theme;
   title: string;
@@ -274,6 +244,7 @@ function Page({
   onPress: () => void;
   waiting?: boolean;
   noPayment?: boolean;
+  secondary?: { label: string; onPress: () => void };
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -293,13 +264,18 @@ function Page({
         </View>
       )}
       <View style={styles.footer}>
-        {waiting ? <ActivityIndicator color={theme.inkSoft} style={styles.waiting} /> : <MainButton theme={theme} label={button} onPress={onPress} />}
+        {waiting ? <ActivityIndicator color={theme.inkSoft} style={styles.waiting} /> : <Action theme={theme} label={button} onPress={onPress} />}
         {noPayment && (
           <View style={styles.noPaymentRow}>
             <Glyph name="check" size={18} color={theme.ink} weight={2.4} />
             <Text style={[type.strong, { color: theme.ink }]}>No payment now</Text>
           </View>
         )}
+        {secondary ? (
+          <Tap onPress={secondary.onPress} accessibilityRole="button" style={styles.skip}>
+            <Text style={[type.body, { color: theme.inkSoft, textAlign: 'center' }]}>{secondary.label}</Text>
+          </Tap>
+        ) : null}
       </View>
     </View>
   );
@@ -308,23 +284,17 @@ function Page({
 const styles = StyleSheet.create({
   container: { flex: 1 },
   words: { flex: 1, justifyContent: 'center', paddingHorizontal: space.xl },
-  visual: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.l, paddingTop: space.xl },
-  wordsUnder: { paddingHorizontal: space.xl, paddingTop: space.xl, paddingBottom: space.xl },
-  listPage: { flex: 1, paddingTop: space.xxl, paddingHorizontal: space.l },
+  visual: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.l, paddingTop: space.l },
+  wordsUnder: { paddingHorizontal: space.xl, paddingTop: space.l, paddingBottom: space.l },
   line: { marginTop: space.m },
-  need: { flexDirection: 'row', alignItems: 'center', gap: space.m, minHeight: 68, paddingHorizontal: space.l, paddingVertical: space.m },
-  radio: { width: 26, height: 26, borderRadius: radius.round, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  radioDot: { width: 12, height: 12, borderRadius: radius.round },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: space.s, marginBottom: space.l },
-  dot: { width: space.s, height: space.s, borderRadius: radius.round },
+  dot: { width: space.s, height: space.s, borderRadius: radius.pill },
   dotOn: { width: space.xl },
-  footer: { paddingHorizontal: space.l, gap: space.m, paddingTop: space.m },
-  waiting: { height: 64 },
-  skip: { minHeight: 48, justifyContent: 'center' },
+  footer: { paddingHorizontal: space.l, gap: space.s, paddingTop: space.s },
+  waiting: { height: 56 },
+  skip: { minHeight: 44, justifyContent: 'center' },
   noPaymentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s },
-  showRow: { flexDirection: 'row', alignItems: 'center', gap: space.s, minHeight: 68, padding: space.s, borderRadius: radius.large, borderWidth: 1 },
-  showStep: { width: 52, height: 52, borderRadius: radius.small, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  showQty: { minWidth: 58, height: 52, borderRadius: radius.small, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  diffCard: { alignSelf: 'stretch', borderRadius: radius.large, borderWidth: 1, padding: space.l, gap: space.s },
-  sheetCrop: { overflow: 'hidden', borderRadius: radius.small, backgroundColor: '#FFFFFF' },
+  banner: { flexDirection: 'row', alignItems: 'center', gap: space.m, borderRadius: radius.plate + 4, borderWidth: 1, padding: space.m },
+  appMark: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  bell: { width: 128, height: 128, borderRadius: 64, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 });

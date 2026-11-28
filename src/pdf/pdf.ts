@@ -1,5 +1,5 @@
 /**
- * Writing the count sheet with pdf-lib: the layout's operations, drawn one
+ * Writing the PDF chart with pdf-lib: the layout's operations, drawn one
  * to one. Pure (no native imports), so `npm test` makes real PDFs and
  * checks them.
  */
@@ -24,8 +24,8 @@ export async function writePdf(pages: Page[], fonts: FontBytes, meta: PdfMeta): 
   pdf.registerFontkit(fontkit as any);
   pdf.setTitle(meta.title);
   pdf.setSubject(meta.subject);
-  pdf.setCreator('Cash Counter');
-  pdf.setProducer('Cash Counter');
+  pdf.setCreator('Barometer');
+  pdf.setProducer('Barometer');
   const embedded = {} as Record<FontKey, Awaited<ReturnType<typeof pdf.embedFont>>>;
   for (const k of Object.keys(fonts) as FontKey[]) embedded[k] = await pdf.embedFont(fonts[k], { subset: true, features: FEATURES });
 
@@ -46,7 +46,9 @@ export async function writePdf(pages: Page[], fonts: FontBytes, meta: PdfMeta): 
           borderWidth: op.stroke ? op.lw ?? 1 : 0,
         });
       } else if (op.k === 'line') {
-        page.drawLine({ start: { x: op.x1, y: H - op.y1 }, end: { x: op.x2, y: H - op.y2 }, thickness: op.lw, color: color(op.color) });
+        page.drawLine({ start: { x: op.x1, y: H - op.y1 }, end: { x: op.x2, y: H - op.y2 }, thickness: op.lw, color: color(op.color), dashArray: op.dash });
+      } else if (op.k === 'dot') {
+        page.drawCircle({ x: op.x, y: H - op.y, size: op.r, color: color(op.fill) });
       }
     }
   }

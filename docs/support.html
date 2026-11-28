@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#ECEEEA">
+<link rel="stylesheet" href="style.css">
+<title>Support and Questions, Barometer</title>
+<meta name="description" content="Answers about Barometer: how readings are taken, why there are gaps in the chart, background checks, change alerts, sea level pressure, the altimeter, units, Pro and restoring a purchase.">
+<link rel="canonical" href="https://bkdigitalleads-cmyk.github.io/barometer/support.html">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "Where does the reading come from?", "acceptedAnswer": { "@type": "Answer", "text": "From the pressure sensor built into your iPhone. Nothing comes from the internet or a weather service." } },
+    { "@type": "Question", "name": "Why are there gaps in the chart?", "acceptedAnswer": { "@type": "Answer", "text": "The app stores a reading every five minutes while it is open, and one each time iOS lets it check in the background, often a few times a day. Times with no reading stay empty on the chart; nothing is filled in." } },
+    { "@type": "Question", "name": "Why did a change alert come late?", "acceptedAnswer": { "@type": "Answer", "text": "The alert is checked each time a reading is stored. While the app is closed, iOS decides when it can check, so an alert can come late or not at all." } }
+  ]
+}
+</script>
+</head>
+<body>
+<div class="wrap">
+<a class="brand" href="./"><img src="icon-512.png" width="34" height="34" alt="Barometer app icon: a dial over a mountain ridge, with a teal hand"> Barometer</a>
+<h1>Support and questions</h1>
+<p>Write to <a href="mailto:bkdigitalleads@gmail.com?subject=Barometer%20support">bkdigitalleads@gmail.com</a>. In the app, Settings, Email support opens Mail with the subject filled in.</p>
+
+<h2>Readings</h2>
+<details><summary>Where does the reading come from?</summary><p>From the pressure sensor built into your iPhone (every iPhone since iPhone 6 has one). Nothing comes from the internet or a weather service, so it works in airplane mode and out of signal. The app shows what the sensor reads.</p></details>
+<details><summary>How often is a reading stored?</summary><p>Every five minutes while the app is open. While it is closed, iOS lets the app check in the background from time to time, often a few times a day, and each check stores one reading. iOS decides when, based on how you use your phone; it does not run these checks after you swipe the app away in the app switcher, in Low Power Mode, or with Background App Refresh off for Barometer (Settings, General, Background App Refresh).</p></details>
+<details><summary>Why are there gaps in the chart?</summary><p>A gap is a time with no stored reading, usually while the app was closed and iOS had not let it check. The chart leaves gaps empty and marks them; it never draws a line across them. A single background reading shows as a dot.</p></details>
+<details><summary>What do Rising, Steady and Falling mean?</summary><p>The change from the reading about three hours earlier. Less than 1 hPa either way is Steady. The arrow and the words, like "Falling, 3.1 hPa in 3 hours", say exactly what changed. With no reading from one to three and a half hours ago there is no trend yet.</p></details>
+<details><summary>The reading changed when I went upstairs. Why?</summary><p>Air pressure drops as you go up, about 1 hPa for every 8 meters (27 feet). Your phone feels the difference between floors. That is how the altimeter works, and why a big change from a lift or a plane never sets off an alert.</p></details>
+
+<h2>Sea level and the altimeter</h2>
+<details><summary>What is sea level pressure?</summary><p>The reading adjusted to what it would be at sea level, so it can be compared with other places. The app needs your elevation for it: from your location once on the Altimeter tab, or typed in Settings (Pro). The gauge says which one is in use.</p></details>
+<details><summary>How does the altimeter work without signal?</summary><p>It follows the change in pressure. Tap Reset here at the start of a climb, and it shows how far you have gone up or down since. Weather moves pressure too, so for the best reading reset just before you set off.</p></details>
+<details><summary>Why does it ask for my location?</summary><p>Only on the Altimeter tab, only when you tap Use my location, and only while the app is open, to get a starting elevation once. Your location stays on your iPhone. Everything works with location off.</p></details>
+
+<h2>Alerts, notes and export</h2>
+<details><summary>How does the change alert work?</summary><p>Turn it on in History (the bell) or Settings, and choose an amount from 2 to 6 hPa. When the stored readings show a rise or a fall of that much within three hours, you get a notification such as "Pressure fell 4 hPa in the last 3 hours." One change alerts once. It is checked each time a reading is stored, so while the app is closed it depends on how often iOS lets the app check, and it can be late.</p></details>
+<details><summary>How do I add a note?</summary><p>Tap the tag on the gauge, or Add under Notes in History. Pick Headache, Joint pain, Fishing, Hike, or type your own label. The note sits on the chart with the pressure and trend at that moment. Hold a note in the list to delete it.</p></details>
+<details><summary>What is in the PDF and the CSV?</summary><p>The PDF is one page: the chart for 24 hours, 7 days or 30 days, the high, low and change, and your notes with the pressure at each. The CSV has every stored reading and note with the time and the pressure.</p></details>
+
+<h2>Pro</h2>
+<details><summary>What is free and what is Pro?</summary><p>Free: the live barometer, the altimeter, every unit, sea level from your location, the last 24 hours of history and one note. Pro adds the 7 and 30 day charts, the change alert, notes on the chart, PDF and CSV export, a typed elevation for sea level, and the Marine and Plain dials. Prices are shown in the app from the App Store.</p></details>
+<details><summary>How do I restore a purchase?</summary><p>Settings, Restore purchases, or Restore purchases on any Pro screen, signed in with the same Apple ID.</p></details>
+<details><summary>How do I cancel?</summary><p>In your iPhone's Settings, your name, Subscriptions, Barometer. Your readings and notes stay on your iPhone.</p></details>
+
+<footer><a href="./">Barometer</a><a href="support.html">Support</a><a href="privacy.html">Privacy</a><br>Made in NYC by Brian Kershner.</footer>
+</div>
+</body>
+</html>
